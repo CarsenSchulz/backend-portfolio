@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from models import Item
 
 app = FastAPI()
 
@@ -9,7 +10,7 @@ def read_root():
     return {"status": "ok", "message": "FastAPI is running"}
 
 @app.post("/items") 
-def create_item(item: dict): 
+def create_item(item: Item): 
     items.append(item) 
     return {"status": "created", "item": item}
 
