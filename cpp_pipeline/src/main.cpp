@@ -16,9 +16,5 @@ int main() {
     while (auto e = queue.dequeue()) {
         std::cout << "Event: " << e->instrument_id << ", " << e->price << ", " << e->timestamp << "\n";
     }
-
-
-    std::cout << "\nPress Enter to exit...";
-    std::cin.get(); // wait for Enter key
     return 0;
 }
