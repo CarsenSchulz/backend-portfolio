@@ -2,6 +2,10 @@
 #include <cmath>
 #include <iostream>
 
+
+Ingestion::Ingestion(EventQueue& q)
+    : queue(q) {}
+
 bool Ingestion::validateInstrument(int64_t instrument_id)
 {
     if (instrument_id <= 0 || instrument_id > ID_MAX) return false;

@@ -1,6 +1,9 @@
 #include "EventQueue.h"
 #include <utility>
 
+EventQueue::EventQueue(int capacity)
+    : capacity(capacity) {}
+
 bool EventQueue::enqueue(Event&& event) //single producer / single consumer only
 {
     if (queue.size() >= capacity) return false;
