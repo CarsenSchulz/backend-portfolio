@@ -8,7 +8,7 @@ Ingestion::Ingestion(EventQueue& q)
 
 bool Ingestion::validateInstrument(int64_t instrument_id) const 
 {
-    return 1 <= instrument_id <= ID_MAX;
+    return 1 <= instrument_id && instrument_id <= ID_MAX;
 }
 
 bool Ingestion::validatePrice(double price) const 
