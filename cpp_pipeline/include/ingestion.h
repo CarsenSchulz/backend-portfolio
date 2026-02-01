@@ -1,26 +1,22 @@
 #pragma once
-#include "events.h"
 #include "EventQueue.h"
 #include <cstdint>
-#include <unordered_map>
+#include <array>
 
-// Ingestion handles receiving raw event data, validating it, and sending it to the queue
+constexpr int ID_MAX = 1000; // maximum valid instrument ID
+
 class Ingestion {
-private:
-    EventQueue& queue;  // Reference to the main event queue
-    std::unordered_map<int64_t, int64_t> lastTimestamps; // Track last timestamp per instrument
-    const int64_t ID_MAX = 5; // Maximum ID for intrument
+    EventQueue& queue; //reference to queue
 
-    // Validation helpers
-    bool validateInstrument(int64_t instrument_id);
-    bool validatePrice(double price);
-    bool validateTimestamp(int64_t instrument_id, int64_t timestamp);
+    std::array<int64_t, ID_MAX> lastTimestamps{}; // Tracks latest timestamp of specific ID, based on index
+    std::array<bool, ID_MAX> seen{};  // Tracks if instrument_id has been seen, needed so first entry passes validation
+
+    bool validateInstrument(int64_t instrument_id) const; // Checks if instrument_id is valid
+    bool validatePrice(double price) const; // Checks if price is valid
+    bool validateTimestamp(int64_t instrument_id, int64_t timestamp) const; // Checks if timestamp is valid
 
 public:
-    // Constructor: pass the queue to send validated events to
-    Ingestion(EventQueue& q);
-
-    // Receive raw inputs, validate, and enqueue if valid
-    // Returns true if successfully enqueued, false if invalid or queue full
-    bool ingest(int64_t instrument_id, double price, int64_t timestamp);
+    explicit Ingestion(EventQueue& q); // Constructor
+    
+    bool ingest(int64_t instrument_id, double price, int64_t timestamp); // Returns true if event was successfully ingested, false if queue full
 };
