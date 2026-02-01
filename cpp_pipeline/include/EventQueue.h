@@ -28,10 +28,10 @@ public:
     // Enqueue an Event
     // Moves the Event into the queue
     // Returns true if successful, false if queue is full
-    bool enqueue(Event&& event);
+    bool enqueue(const Event& event);
     
     // Dequeue an Event
-    // Removes and returns the oldest Event if available
-    // Returns std::nullopt if the queue is empty
-    std::optional<Event> dequeue();
+    // Moves event into reference param and returns true if available
+    // Returns false if the queue is empty
+    const Event* dequeue();
 };

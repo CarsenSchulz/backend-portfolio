@@ -1,26 +1,25 @@
 #include "EventQueue.h"
-#include <utility>
 
 EventQueue::EventQueue(int capacity)
     : capacity(capacity) {}
 
-bool EventQueue::enqueue(Event&& event) //single producer / single consumer only
+bool EventQueue::enqueue(const Event& event) //single producer / single consumer only
 {
     if (queue.size() >= capacity) return false;
     
     else {
-        queue.push(std::move(event));
+        queue.push(event);
         return true;
     }
 }
 
-std::optional<Event> EventQueue::dequeue()
+const Event* EventQueue::dequeue()
 {
-    if (queue.empty()) return std::nullopt;
+    if (queue.empty()) return nullptr;
 
     else {
-        Event event = std::move(queue.front());
+        const Event* e = &queue.front();
         queue.pop();
-        return event;
+        return e;
     }
 }

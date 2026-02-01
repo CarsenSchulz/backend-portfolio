@@ -1,20 +1,50 @@
 #include "EventQueue.h"
+#include "processor.h"
 #include "ingestion.h"
+#include <thread>
+#include <chrono>
+#include <random>
 #include <iostream>
 
 int main() {
-    EventQueue queue(5);
+    constexpr int QUEUE_CAPACITY = 1000000;
+    constexpr int NUM_INSTRUMENTS = 100;
+    constexpr int DURATION_SECONDS = 5;
+
+    EventQueue queue(QUEUE_CAPACITY);
+    Processor processor(queue);
     Ingestion ingestion(queue);
 
-    // feed some demo data
-    ingestion.ingest(1, 100.5, 1000);
-    ingestion.ingest(2, 200.0, 1001);
-    ingestion.ingest(1, 101.0, 999);  // should fail timestamp
-    ingestion.ingest(3, -5.0, 1002);  // should fail price
+    // Random generators
+    std::mt19937_64 rng(42);
+    std::uniform_int_distribution<int64_t> instrument_dist(1, NUM_INSTRUMENTS);
+    std::uniform_real_distribution<double> price_dist(10.0, 200.0);
 
-    // dequeue and print events
-    while (auto e = queue.dequeue()) {
-        std::cout << "Event: " << e->instrument_id << ", " << e->price << ", " << e->timestamp << "\n";
+    // Launch processor in separate thread
+    std::thread processor_thread([&]() {
+        processor.run(DURATION_SECONDS);
+    });
+
+    // Synthetic event generation loop
+    auto start = std::chrono::steady_clock::now();
+    auto end = start + std::chrono::seconds(DURATION_SECONDS);
+
+    int64_t timestamp = 0;
+    int dropped_events = 0;
+    while (std::chrono::steady_clock::now() < end) {
+        int64_t instrument_id = instrument_dist(rng);
+        double price = price_dist(rng);
+        timestamp++;
+
+        if (!ingestion.ingest(instrument_id, price, timestamp)) {
+            dropped_events++;
+        }
     }
+
+    processor_thread.join();
+
+    std::cout << "Dropped events (queue full/validation failure): " << dropped_events << "\n";
+    processor.report();
+
     return 0;
 }

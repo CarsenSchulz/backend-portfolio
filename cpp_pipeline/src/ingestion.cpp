@@ -32,7 +32,6 @@ bool Ingestion::ingest(int64_t instrument_id, double price, int64_t timestamp)
 {
     if (!validateInstrument(instrument_id) || !validatePrice(price) || !validateTimestamp(instrument_id, timestamp))
     {
-        std::cout << "Rejected event: " << instrument_id << ", " << price << ", " << timestamp << "\n";
         return false;
     }
 
@@ -40,7 +39,5 @@ bool Ingestion::ingest(int64_t instrument_id, double price, int64_t timestamp)
 
     Event event(instrument_id, price, timestamp);
 
-    bool result = queue.enqueue(std::move(event));
-
-    return result;
+    return queue.enqueue(event);
 }
