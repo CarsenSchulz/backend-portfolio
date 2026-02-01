@@ -41,6 +41,7 @@ int main() {
             dropped_events++;
         }
     }
+    queue.shutdown();
 
     processor_thread.join();
 

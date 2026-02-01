@@ -14,6 +14,7 @@ void Processor::run(int duration_seconds)
         {
             total_events++;
             per_instrument[e->instrument_id].update(e->price);
+            queue.pop();
         } 
         else 
         {

@@ -1,5 +1,6 @@
 #include "ingestion.h"
 #include <cmath>
+#include <utility>
 
 Ingestion::Ingestion(EventQueue& q)
     : queue(q) {}
@@ -34,5 +35,5 @@ bool Ingestion::ingest(int64_t instrument_id, double price, int64_t timestamp)
     seen[idx] = true;
 
     Event event(instrument_id, price, timestamp);
-    return queue.enqueue(event); // copy into queue, drops event if queue full
+    return queue.enqueue(std::move(event)); // copy into queue, drops event if queue full
 }

@@ -1,37 +1,23 @@
 #pragma once
-#include "events.h"
 #include <queue>
-#include <optional>
+#include <mutex>
+#include <condition_variable>
+#include "events.h"
 
-/*
- * EventQueue
- * ------------
- * A non-blocking, single-consumer FIFO queue for Event objects.
- * Guarantees:
- * - FIFO ordering: oldest events are dequeued first
- * - Drop-on-full: enqueue returns false if capacity is reached
- * - Single consumer: only one thread should dequeue events
- * - Ownership: enqueued Event objects are moved into the queue
- * - Non-blocking: enqueue never waits, always returns immediately
- */
-
-struct EventQueue
-{
-private:
-    std::queue<Event> queue;    // Underlying FIFO storage
-    const int capacity;         // Maximum number of events allowed in the queue
-
+class EventQueue {
 public:
-    // Constructor: sets the maximum capacity of the queue
-    explicit EventQueue(int capacity);
+    explicit EventQueue(size_t capacity);
 
-    // Enqueue an Event
-    // Moves the Event into the queue
-    // Returns true if successful, false if queue is full
-    bool enqueue(const Event& event);
-    
-    // Dequeue an Event
-    // Returns Event pointer if event is available from queue
-    // Returns nullptr if the queue is empty
-    const Event* dequeue();
+    bool enqueue(Event&& e);   // Move Event into queue
+    const Event* dequeue();    // Blocking pointer return
+    void pop();                // Remove last dequeued Event
+    void shutdown();           // Stop consumer (not strictly needed here, but safe)
+
+private:
+    std::queue<Event> queue;   // Own Events by value
+    size_t capacity;
+
+    std::mutex mtx;
+    std::condition_variable cv;
+    bool stopped = false;
 };

@@ -1,25 +1,30 @@
 #include "EventQueue.h"
 
-EventQueue::EventQueue(int capacity)
-    : capacity(capacity) {}
+EventQueue::EventQueue(size_t cap)
+    : capacity(cap) {}
 
-bool EventQueue::enqueue(const Event& event) //single producer / single consumer only
-{
-    if (queue.size() >= capacity) return false;
-    
-    else {
-        queue.push(event);
-        return true;
-    }
+bool EventQueue::enqueue(Event&& e) {
+    std::unique_lock<std::mutex> lock(mtx);
+    if (queue.size() >= capacity) return false;   // Drop if full
+    queue.push(std::move(e));                     // Move immutable Event into queue
+    cv.notify_one();                              // Wake a waiting consumer
+    return true;
 }
 
-const Event* EventQueue::dequeue()
-{
-    if (queue.empty()) return nullptr;
+const Event* EventQueue::dequeue() {
+    std::unique_lock<std::mutex> lock(mtx);
+    cv.wait(lock, [&] { return !queue.empty() || stopped; });  // Wait for data or shutdown
+    if (queue.empty()) return nullptr;                           // Exit if shutdown
+    return &queue.front();                                       // Return pointer to front
+}
 
-    else {
-        const Event* e = &queue.front();
-        queue.pop();
-        return e;
-    }
+void EventQueue::pop() {
+    std::lock_guard<std::mutex> lock(mtx);
+    if (!queue.empty()) queue.pop();       // Remove after processing
+}
+
+void EventQueue::shutdown() {
+    std::lock_guard<std::mutex> lock(mtx);
+    stopped = true;
+    cv.notify_all();
 }
