@@ -17,13 +17,8 @@ void Processor::run(int duration_seconds)
             total_events++;
             per_instrument[e->instrument_id].update(e->price);
             queue.pop();
-            processed_since_last_log++;
-
-            // Print queue size every 1000 events
-            if (processed_since_last_log >= 1000) {
-                std::cout << "[Processor] Queue size: " << queue.size() << "\n";
-                processed_since_last_log = 0;
-            }
+            size_t current_size = queue.size(); // this locks briefly
+            if (current_size > max_queue_size) max_queue_size = current_size;
         } 
         else 
         {
@@ -34,6 +29,7 @@ void Processor::run(int duration_seconds)
 
 void Processor::report() const {
     std::cout << "Total events processed: " << total_events << "\n";
+    std::cout << "Peak queue size: " << max_queue_size << "\n";
     std::cout << "Per-instrument stats:\n";
     for (const auto& [id, stats] : per_instrument) 
     {
