@@ -8,7 +8,8 @@
 
 int main() {
     constexpr int QUEUE_CAPACITY = 1000000;
-    constexpr int NUM_INSTRUMENTS = 100;
+    constexpr int NUM_INSTRUMENTS = 100;  // number of synthetic instruments
+    constexpr int ID_MAX = NUM_INSTRUMENTS; // max valid instrument ID
     constexpr int DURATION_SECONDS = 5;
 
     EventQueue queue(QUEUE_CAPACITY);

@@ -3,7 +3,8 @@
 #include <cstdint>
 #include <array>
 
-constexpr int ID_MAX = 1000; // maximum valid instrument ID
+constexpr int NUM_INSTRUMENTS = 100; // total instruments in synthetic load
+constexpr int ID_MAX = NUM_INSTRUMENTS; // maximum valid instrument ID
 
 class Ingestion {
     EventQueue& queue; //reference to queue
