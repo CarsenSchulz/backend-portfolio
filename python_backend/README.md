@@ -1,16 +1,49 @@
-# FastAPI Backend Demo
+# Python API Backend
 
-## Overview
-This is a demo backend application built with FastAPI. It provides basic CRUD endpoints for managing `Item` objects. This project is designed to show structured backend development and can be extended with databases, validation, testing, and AI features.
+This project implements a RESTful backend service using FastAPI, designed to demonstrate
+clean API design, validation, and extensible backend architecture.
 
-## Features Implemented
-- In-memory CRUD API
-  - `POST /items` — create a new item
-  - `GET /items` — list all items
-  - `PUT /items/{index}` — update an item by index
-  - `DELETE /items/{index}` — delete an item by index
-- Clean project structure with `app/` package
-- Separate modules for routes, models, and app initialization
+The emphasis is on correctness, maintainability, and clear separation of concerns rather than
+framework-specific features.
+
+## Architecture Overview
+
+The service exposes standard CRUD endpoints and uses:
+- FastAPI for request routing and validation
+- In-memory data storage for simplicity
+- Explicit input validation to ensure data integrity
+
+The codebase is structured to make future expansion straightforward without major refactoring.
+
+## Features
+
+- RESTful CRUD endpoints (POST, GET, PUT, DELETE)
+- Request and response validation
+- Clean separation between API logic and data handling
+- Clear error handling and predictable behavior
+
+## Design Philosophy
+
+FastAPI is used as a lightweight framework, but the project focuses on backend fundamentals:
+- API contract clarity
+- Data validation
+- Maintainable structure
+- Ease of testing and deployment
+
+The architecture avoids unnecessary coupling, making it adaptable to other frameworks or
+deployment environments.
+
+## Planned Improvements
+
+- Persistent data storage (SQL or NoSQL)
+- User authentication and authorization
+- Automated testing
+- Deployment and CI/CD integration
+
+## Purpose
+
+This project demonstrates how to design a backend service that is easy to reason about,
+extend, and maintain—skills that transfer across languages, frameworks, and production systems.
 
 ## Running the Project
 
@@ -21,15 +54,11 @@ This is a demo backend application built with FastAPI. It provides basic CRUD en
    .venv\Scripts\activate      # Windows
 
 2. Install dependencies
-    pip install -r requirements.txt
+    ```bash
+   pip install -r requirements.txt
 
-3. Run the server
+4. Run the server
+    ```bash
     uvicorn app.main:app --reload
 
-4. Visit the docs at: http://127.0.0.1:8000/docs
-
-## Next Steps
-Integrate SQLite database
-Add Pydantic models with validation
-Implement testing (pytest)
-Add authentication and deployment pipeline
+5. Visit the docs at: http://127.0.0.1:8000/docs
