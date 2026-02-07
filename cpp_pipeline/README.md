@@ -40,6 +40,7 @@ Planned enhancements include:
 - Multi-threaded processing model
 - Asynchronous metrics logging
 - Improved memory locality and cache behavior
+- Migrated build process to CMake
 
 These changes will allow direct comparison between architectural approaches and their impact
 on performance.
@@ -48,3 +49,28 @@ on performance.
 
 This project is not a trading system. It is a focused exploration of low-latency system design,
 measurement, and incremental optimization in modern C++.
+
+## Building and Running
+
+### Requirements
+- C++17 compatible compiler (GCC or Clang)
+- Linux, macOS, or Windows (MinGW / WSL recommended on Windows)
+
+### Build
+From the repository root:
+
+```bash
+  g++ -std=c++17 \
+  -I cpp_pipeline/include \
+  cpp_pipeline/src/main.cpp \
+  cpp_pipeline/src/ingestion.cpp \
+  cpp_pipeline/src/EventQueue.cpp \
+  cpp_pipeline/src/processor.cpp \
+  cpp_pipeline/src/benchmarks.cpp \
+  -o pipeline
+```
+
+### Run
+```bash
+  ./pipeline
+```
