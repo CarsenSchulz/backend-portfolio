@@ -11,7 +11,7 @@
 #include <sstream>
 
 int main() {
-    constexpr int QUEUE_CAPACITY = 500000;
+    constexpr int QUEUE_CAPACITY = 1E6;
     constexpr int DURATION_SECONDS = 5;
     constexpr int NUM_INSTRUMENTS = 100;    
     double MIN_PRICE = 0.0;  
@@ -52,14 +52,25 @@ int main() {
     auto start = std::chrono::steady_clock::now();
     auto end = start + std::chrono::seconds(DURATION_SECONDS);
 
+    constexpr int BATCH_SIZE = 1000;
+
+    std::vector<Event> batch;
+    batch.reserve(BATCH_SIZE);
+
     int64_t timestamp = 0;
     while (std::chrono::steady_clock::now() < end) {
-        int64_t instrument_id = instrument_dist(rng);
-        double price = price_dist(rng);
-        timestamp++;
+        // Generate a batch
+        batch.clear();
+        for (int i = 0; i < BATCH_SIZE; i++) {
+            int64_t instrument_id = instrument_dist(rng);
+            double price = price_dist(rng);
+            timestamp++;
+            batch.emplace_back(instrument_id, price, timestamp);
+        }
 
-        if (!ingestion.ingest(instrument_id, price, timestamp)) {
-
+        // Validate + enqueue batch
+        for (auto& e : batch) {
+            ingestion.ingest(e.instrument_id, e.price, e.timestamp);
         }
     }
     queue.shutdown();
