@@ -11,17 +11,17 @@ bool EventQueue::enqueue(Event&& e) {
     return true;
 }
 
-const Event* EventQueue::dequeue() {
+std::optional<Event> EventQueue::dequeue() {
     std::unique_lock<std::mutex> lock(mtx);
-    cv.wait(lock, [&] { return !queue.empty() || stopped; });  // Wait for data or shutdown
-    if (queue.empty()) return nullptr;                           // Exit if shutdown
-    return &queue.front();                                       // Return pointer to front
+    cv.wait(lock, [&]{ return !queue.empty() || stopped; });
+
+    if (queue.empty()) return std::nullopt;  // shutdown
+
+    Event e = std::move(queue.front());
+    queue.pop();
+    return e;                               // Return pointer to front
 }
 
-void EventQueue::pop() {
-    std::lock_guard<std::mutex> lock(mtx);
-    if (!queue.empty()) queue.pop();       // Remove after processing
-}
 
 void EventQueue::shutdown() {
     std::lock_guard<std::mutex> lock(mtx);

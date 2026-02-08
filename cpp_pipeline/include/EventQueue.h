@@ -3,14 +3,14 @@
 #include <mutex>
 #include <condition_variable>
 #include "events.h"
+#include <optional>
 
 class EventQueue {
 public:
     explicit EventQueue(size_t capacity);
 
     bool enqueue(Event&& e);   // Move Event into queue
-    const Event* dequeue();    // Blocking pointer return
-    void pop();                // Remove last dequeued Event
+    std::optional<Event> dequeue();    // Blocking pointer return
     void shutdown();           // Stop consumer (not strictly needed here, but safe)
 
     size_t size();

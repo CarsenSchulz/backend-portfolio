@@ -11,9 +11,9 @@ void Processor::run(int duration_seconds)
     int processed_since_last_log = 0;
 
     while (std::chrono::steady_clock::now() < end) {
-        const Event* e = queue.dequeue();
+        auto e = queue.dequeue();
         
-        if (!e) break; // if e is nullptr, we are in shutdown
+        if (!e) break; // if e is nullopt, we are in shutdown
 
         { // --- LOCK BEGIN ---
             std::lock_guard<std::mutex> lock(stats_mtx);
@@ -21,7 +21,6 @@ void Processor::run(int duration_seconds)
             per_instrument[e->instrument_id].update(e->price);
         } // --- LOCK END ---
 
-        queue.pop();
         size_t current_size = queue.size(); // this locks briefly
         if (current_size > max_queue_size) max_queue_size = current_size;
     }
