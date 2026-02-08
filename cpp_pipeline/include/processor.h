@@ -35,6 +35,7 @@ class Processor
     int64_t total_events = 0; // Num events processed
     std::unordered_map<int64_t, InstrumentStats> per_instrument; // Map for per-instrument stats
     size_t max_queue_size = 0;
+    std::mutex stats_mtx;
 
 public:
     explicit Processor(EventQueue& q) : queue(q) {}

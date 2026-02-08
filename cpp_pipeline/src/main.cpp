@@ -6,6 +6,7 @@
 #include <thread>
 #include <chrono>
 #include <random>
+#include <vector>
 
 #include <sstream>
 
@@ -36,11 +37,16 @@ int main() {
     std::uniform_int_distribution<int64_t> instrument_dist(1, gen_max_id);
     std::uniform_real_distribution<double> price_dist(gen_min_price, MAX_PRICE);
 
+    //spawn and start threads
+    const int NUM_THREADS = 2;
+    std::vector<std::thread> threads;
 
-    // Launch processor in separate thread
-    std::thread processor_thread([&]() {
-        processor.run(DURATION_SECONDS);
-    });
+    for (int i = 0; i < NUM_THREADS; ++i)
+    {
+        threads.push_back(std::thread([&processor]() {
+            processor.run(DURATION_SECONDS);
+        }));
+    }
 
     // Synthetic event generation loop
     auto start = std::chrono::steady_clock::now();
@@ -58,7 +64,8 @@ int main() {
     }
     queue.shutdown();
 
-    processor_thread.join();
+    //join all processor threads
+    for (auto& t : threads) t.join();
 
     // Ensure benchmarks folder exists
     Benchmarks::ensureFolder();
