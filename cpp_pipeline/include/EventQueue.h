@@ -4,6 +4,7 @@
 #include <condition_variable>
 #include "events.h"
 #include <optional>
+#include <atomic>
 
 class EventQueue {
 public:
@@ -18,6 +19,7 @@ public:
 private:
     std::queue<Event> queue;   // Own Events by value
     size_t capacity;
+    std::atomic<size_t> current_size{0};
 
     std::mutex mtx;
     std::condition_variable cv;

@@ -7,6 +7,7 @@ bool EventQueue::enqueue(Event&& e) {
     std::unique_lock<std::mutex> lock(mtx);
     if (queue.size() >= capacity) return false;   // Drop if full
     queue.push(std::move(e));                     // Move immutable Event into queue
+    current_size++;
     cv.notify_one();                              // Wake a waiting consumer
     return true;
 }
@@ -19,6 +20,7 @@ std::optional<Event> EventQueue::dequeue() {
 
     Event e = std::move(queue.front());
     queue.pop();
+    current_size--;
     return e;                               // Return pointer to front
 }
 
@@ -30,6 +32,5 @@ void EventQueue::shutdown() {
 }
 
 size_t EventQueue::size() {
-    std::lock_guard<std::mutex> lock(mtx);
-    return queue.size();
+    return current_size.load();
 }

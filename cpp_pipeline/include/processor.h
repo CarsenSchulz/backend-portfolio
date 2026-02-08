@@ -2,6 +2,7 @@
 #include "EventQueue.h"
 #include <unordered_map>
 #include <cstdint>
+#include <atomic>
 
 struct InstrumentStats {
     int64_t count = 0; // Number of events processed
@@ -32,7 +33,8 @@ struct InstrumentStats {
 class Processor 
 {
     EventQueue& queue; // Reference to queue
-    int64_t total_events = 0; // Num events processed
+    //int64_t total_events = 0; // Num events processed
+    std::atomic<int64_t> total_events{0};
     std::unordered_map<int64_t, InstrumentStats> per_instrument; // Map for per-instrument stats
     size_t max_queue_size = 0;
     std::mutex stats_mtx;
