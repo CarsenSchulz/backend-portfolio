@@ -60,17 +60,17 @@ measurement, and incremental optimization in modern C++.
 From the repository root:
 
 ```bash
-  g++ -std=c++17 \
-  -I cpp_pipeline/include \
-  cpp_pipeline/src/main.cpp \
-  cpp_pipeline/src/ingestion.cpp \
-  cpp_pipeline/src/EventQueue.cpp \
-  cpp_pipeline/src/processor.cpp \
-  cpp_pipeline/src/benchmarks.cpp \
+g++ -std=c++17 \
+  -I include \
+  src/main.cpp \
+  src/Ingestion.cpp \
+  src/EventQueue.cpp \
+  src/processor.cpp \
+  src/Benchmarks.cpp \
   -o pipeline
 ```
 
 ### Run
 ```bash
-  ./pipeline
+./pipeline
 ```
