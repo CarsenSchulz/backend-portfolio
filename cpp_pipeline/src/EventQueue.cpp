@@ -1,34 +1,47 @@
 #include "EventQueue.h"
 
 EventQueue::EventQueue(size_t cap)
-    : capacity(cap) {}
+    : buffer(cap), capacity(cap) {}
 
 bool EventQueue::enqueue(Event&& e) {
     std::unique_lock<std::mutex> lock(mtx);
-    if (queue.size() >= capacity) return false;   // Drop if full
-    queue.push(std::move(e));                     // Move immutable Event into queue
+    while (current_size.load() >= capacity && !stopped) {
+        not_full_cv.wait(lock);
+    }
+    if (stopped) {
+        return false;
+    }
+
+    buffer[tail].emplace(std::move(e));
+    tail = (tail + 1) % capacity;
     current_size++;
-    cv.notify_one();                              // Wake a waiting consumer
+    not_empty_cv.notify_one();
     return true;
 }
 
 std::optional<Event> EventQueue::dequeue() {
     std::unique_lock<std::mutex> lock(mtx);
-    cv.wait(lock, [&]{ return !queue.empty() || stopped; });
+    while (current_size.load() == 0 && !stopped) {
+        not_empty_cv.wait(lock);
+    }
 
-    if (queue.empty()) return std::nullopt;  // shutdown
+    if (current_size.load() == 0) {
+        return std::nullopt;
+    }
 
-    Event e = std::move(queue.front());
-    queue.pop();
+    std::optional<Event> event = std::move(buffer[head]);
+    buffer[head].reset();
+    head = (head + 1) % capacity;
     current_size--;
-    return e;                               // Return pointer to front
+    not_full_cv.notify_one();
+    return event;
 }
-
 
 void EventQueue::shutdown() {
     std::lock_guard<std::mutex> lock(mtx);
     stopped = true;
-    cv.notify_all();
+    not_empty_cv.notify_all();
+    not_full_cv.notify_all();
 }
 
 size_t EventQueue::size() const {

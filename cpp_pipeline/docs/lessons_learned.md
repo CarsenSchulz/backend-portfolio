@@ -90,9 +90,32 @@ This document tracks key problems encountered during development, the investigat
 - Benchmarking & reporting architecture  
 - Generator/ingestion thread separation  
 - Ring buffer or lock-free queue experiments  
-- AI-assisted cleanup and review workflow  
 
 ---
+
+## Ring buffer throughput improvement
+
+**Problem:**  
+- The original queue implementation was simple and correct, but it was still using `std::queue` on the hottest path in the whole program.  
+- Even in the single-threaded version, every event still had to go through enqueue/dequeue plus queue bookkeeping, so small overhead there added up fast.  
+
+**What I changed:**  
+- Swapped the queue storage to a bounded ring buffer instead of `std::queue`.  
+- Kept the pipeline shape mostly the same so it was still easy to explain.  
+- Also cleaned up the processor side a bit by using fixed instrument slots instead of a more general container.  
+
+**Why it helped:**  
+- The ring buffer keeps storage fixed and reuses the same memory instead of relying on a more general queue structure.  
+- That made the hot path cheaper and more predictable.  
+- Since the queue sits between generation and processing, even a small improvement there had a pretty big effect on total throughput.  
+
+**Takeaway:**  
+- This was a good example of a simple systems change with a measurable payoff.  
+- I did not need a more complicated architecture to get a big gain here, just a better data structure for the workload.  
+
+## Compiler optimization note
+
+Rebuilding the same single-threaded version with `-O2` gave a much bigger throughput jump than I expected. It was a good reminder that compiler settings can change the results a lot, and benchmarking without optimization can give a pretty misleading picture.  
 
 ## AI-assisted cleanup and review workflow
 

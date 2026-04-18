@@ -61,7 +61,7 @@ From the repository root:
 
 ```bash
 mkdir -p builds
-g++ -std=c++17 \
+g++ -O2 -std=c++17 \
   -I include \
   src/main.cpp \
   src/Ingestion.cpp \

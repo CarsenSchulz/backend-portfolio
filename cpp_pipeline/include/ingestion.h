@@ -1,27 +1,28 @@
 #pragma once
 #include "EventQueue.h"
+
 #include <array>
 #include <cstdint>
 #include <ostream>
 
-constexpr int NUM_INSTRUMENTS = 100; // total instruments in synthetic load
-constexpr int ID_MAX = NUM_INSTRUMENTS; // maximum valid instrument ID
+constexpr int NUM_INSTRUMENTS = 100;
+constexpr int ID_MAX = NUM_INSTRUMENTS;
 
 class Ingestion {
-    EventQueue& queue; //reference to queue
+    EventQueue& queue;
 
-    std::array<int64_t, ID_MAX> lastTimestamps{}; // Tracks latest timestamp of specific ID, based on index
-    std::array<bool, ID_MAX> seen{};  // Tracks if instrument_id has been seen, needed so first entry passes validation
+    std::array<int64_t, ID_MAX> lastTimestamps{};
+    std::array<bool, ID_MAX> seen{};
     int validation_fails = 0;
     int dropped_events = 0;
 
-    bool validateInstrument(int64_t instrument_id) const; // Checks if instrument_id is valid
-    bool validatePrice(double price) const; // Checks if price is valid
-    bool validateTimestamp(int64_t instrument_id, int64_t timestamp) const; // Checks if timestamp is valid
+    bool validateInstrument(int64_t instrument_id) const;
+    bool validatePrice(double price) const;
+    bool validateTimestamp(int64_t instrument_id, int64_t timestamp) const;
 
 public:
     explicit Ingestion(EventQueue& q);
 
-    bool ingest(int64_t instrument_id, double price, int64_t timestamp); // Returns false on validation failure or a full queue.
+    bool ingest(int64_t instrument_id, double price, int64_t timestamp);
     void report(std::ostream& os) const;
 };

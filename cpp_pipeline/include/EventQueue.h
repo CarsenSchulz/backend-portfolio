@@ -4,7 +4,7 @@
 #include <cstddef>
 #include <mutex>
 #include <optional>
-#include <queue>
+#include <vector>
 
 #include "Events.h"
 
@@ -13,17 +13,20 @@ public:
     explicit EventQueue(size_t capacity);
 
     bool enqueue(Event&& e);
-    std::optional<Event> dequeue(); // Blocks until work arrives or shutdown begins.
+    std::optional<Event> dequeue();
     void shutdown();
 
     size_t size() const;
 
 private:
-    std::queue<Event> queue;
-    size_t capacity;
+    std::vector<std::optional<Event>> buffer;
+    const size_t capacity;
+    size_t head = 0;
+    size_t tail = 0;
     std::atomic<size_t> current_size{0};
 
     std::mutex mtx;
-    std::condition_variable cv;
+    std::condition_variable not_empty_cv;
+    std::condition_variable not_full_cv;
     bool stopped = false;
 };

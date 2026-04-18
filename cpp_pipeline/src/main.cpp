@@ -12,7 +12,7 @@
 int main() {
     constexpr size_t kQueueCapacity = 1'000'000;
     constexpr int kDurationSeconds = 5;
-    constexpr int kProcessorThreads = 1; // Keep the baseline easy to explain in interviews.
+    constexpr int kProcessorThreads = 1;
     constexpr int kBatchSize = 1'000;
     constexpr double kMinPrice = 0.0;
     constexpr double kMaxPrice = 200.0;
@@ -22,8 +22,8 @@ int main() {
     double generator_min_price = kMinPrice;
 
     if (kFaultInjection) {
-        generator_max_id = ID_MAX + 1; // Allow some invalid instrument IDs through the generator.
-        generator_min_price = -0.1;    // Allow some invalid negative prices through the generator.
+        generator_max_id = ID_MAX + 1;
+        generator_min_price = -0.1;
     }
 
     EventQueue queue(kQueueCapacity);
@@ -38,9 +38,7 @@ int main() {
     threads.reserve(kProcessorThreads);
 
     for (int i = 0; i < kProcessorThreads; ++i) {
-        threads.push_back(std::thread([&processor]() {
-            processor.run(kDurationSeconds);
-        }));
+        threads.push_back(std::thread(&Processor::run, &processor, kDurationSeconds));
     }
 
     auto start = std::chrono::steady_clock::now();
