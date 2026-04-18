@@ -1,95 +1,81 @@
 #include "EventQueue.h"
+#include "Benchmarks.h"
+#include "Ingestion.h"
 #include "processor.h"
-#include "ingestion.h"
-#include "benchmarks.h"
 
-#include <thread>
 #include <chrono>
 #include <random>
+#include <sstream>
+#include <thread>
 #include <vector>
 
-#include <sstream>
-
 int main() {
-    constexpr int QUEUE_CAPACITY = 1E6;
-    constexpr int DURATION_SECONDS = 5;
-    constexpr int NUM_INSTRUMENTS = 100;    
-    double MIN_PRICE = 0.0;  
-    double MAX_PRICE = 200.0;
+    constexpr size_t kQueueCapacity = 1'000'000;
+    constexpr int kDurationSeconds = 5;
+    constexpr int kProcessorThreads = 1; // Keep the baseline easy to explain in interviews.
+    constexpr int kBatchSize = 1'000;
+    constexpr double kMinPrice = 0.0;
+    constexpr double kMaxPrice = 200.0;
+    constexpr bool kFaultInjection = false;
 
-    constexpr bool FAULT_INJECTION = false;
+    int generator_max_id = ID_MAX;
+    double generator_min_price = kMinPrice;
 
-    // Variables for generator only — not constants, can change
-    int gen_max_id = NUM_INSTRUMENTS;
-    double gen_min_price = MIN_PRICE;
-
-    if (FAULT_INJECTION) {
-        gen_max_id = 101;      // Some IDs > NUM_INSTRUMENTS → invalid
-        gen_min_price = -0.1;  // Some negative prices → invalid
+    if (kFaultInjection) {
+        generator_max_id = ID_MAX + 1; // Allow some invalid instrument IDs through the generator.
+        generator_min_price = -0.1;    // Allow some invalid negative prices through the generator.
     }
 
-    EventQueue queue(QUEUE_CAPACITY);
+    EventQueue queue(kQueueCapacity);
     Processor processor(queue);
     Ingestion ingestion(queue);
 
-    // Random generators
     std::mt19937_64 rng(42);
-    std::uniform_int_distribution<int64_t> instrument_dist(1, gen_max_id);
-    std::uniform_real_distribution<double> price_dist(gen_min_price, MAX_PRICE);
+    std::uniform_int_distribution<int64_t> instrument_dist(1, generator_max_id);
+    std::uniform_real_distribution<double> price_dist(generator_min_price, kMaxPrice);
 
-    //spawn and start threads
-    const int NUM_THREADS = 2;
     std::vector<std::thread> threads;
+    threads.reserve(kProcessorThreads);
 
-    for (int i = 0; i < NUM_THREADS; ++i)
-    {
+    for (int i = 0; i < kProcessorThreads; ++i) {
         threads.push_back(std::thread([&processor]() {
-            processor.run(DURATION_SECONDS);
+            processor.run(kDurationSeconds);
         }));
     }
 
-    // Synthetic event generation loop
     auto start = std::chrono::steady_clock::now();
-    auto end = start + std::chrono::seconds(DURATION_SECONDS);
-
-    constexpr int BATCH_SIZE = 1000;
+    auto end = start + std::chrono::seconds(kDurationSeconds);
 
     std::vector<Event> batch;
-    batch.reserve(BATCH_SIZE);
+    batch.reserve(kBatchSize);
 
     int64_t timestamp = 0;
     while (std::chrono::steady_clock::now() < end) {
-        // Generate a batch
         batch.clear();
-        for (int i = 0; i < BATCH_SIZE; i++) {
-            int64_t instrument_id = instrument_dist(rng);
-            double price = price_dist(rng);
-            timestamp++;
-            batch.emplace_back(instrument_id, price, timestamp);
+        for (int i = 0; i < kBatchSize; ++i) {
+            const int64_t instrument_id = instrument_dist(rng);
+            const double price = price_dist(rng);
+            batch.emplace_back(instrument_id, price, ++timestamp);
         }
 
-        // Validate + enqueue batch
-        for (auto& e : batch) {
-            ingestion.ingest(e.instrument_id, e.price, e.timestamp);
+        for (const auto& event : batch) {
+            ingestion.ingest(event.instrument_id, event.price, event.timestamp);
         }
     }
+
     queue.shutdown();
 
-    //join all processor threads
-    for (auto& t : threads) t.join();
+    for (auto& thread : threads) {
+        thread.join();
+    }
 
-    // Ensure benchmarks folder exists
     Benchmarks::ensureFolder();
 
-    // Collect metrics from ingestion and processor into a string stream
     std::ostringstream metrics;
-    ingestion.report(metrics);   // must accept std::ostream& now
-    processor.report(metrics);   // must accept std::ostream& now
+    ingestion.report(metrics);
+    processor.report(metrics);
 
-    // Generate timestamped filename
-    std::string filename = Benchmarks::makeTimestampedFilename();
-
-    // Write metrics to file and echo to console
+    const std::string filename = Benchmarks::makeTimestampedFilename();
     Benchmarks::writeMetricsWithConsole(filename, metrics);
 
     return 0;

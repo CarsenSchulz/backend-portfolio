@@ -60,6 +60,7 @@ measurement, and incremental optimization in modern C++.
 From the repository root:
 
 ```bash
+mkdir -p builds
 g++ -std=c++17 \
   -I include \
   src/main.cpp \
@@ -67,10 +68,12 @@ g++ -std=c++17 \
   src/EventQueue.cpp \
   src/processor.cpp \
   src/Benchmarks.cpp \
-  -o pipeline
+  -o builds/pipeline
 ```
 
 ### Run
 ```bash
-./pipeline
+./builds/pipeline
 ```
+
+Benchmark reports are written to the local `benchmarks/` folder.

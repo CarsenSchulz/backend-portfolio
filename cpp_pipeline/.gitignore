@@ -1,5 +1,7 @@
 #build folder
 builds/
+pipeline
+pipeline.exe
 
 #benchmarks folder
 benchmarks/

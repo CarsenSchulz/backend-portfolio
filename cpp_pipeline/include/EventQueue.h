@@ -1,23 +1,25 @@
 #pragma once
-#include <queue>
-#include <mutex>
-#include <condition_variable>
-#include "events.h"
-#include <optional>
 #include <atomic>
+#include <condition_variable>
+#include <cstddef>
+#include <mutex>
+#include <optional>
+#include <queue>
+
+#include "Events.h"
 
 class EventQueue {
 public:
     explicit EventQueue(size_t capacity);
 
-    bool enqueue(Event&& e);   // Move Event into queue
-    std::optional<Event> dequeue();    // Blocking pointer return
-    void shutdown();           // Stop consumer (not strictly needed here, but safe)
+    bool enqueue(Event&& e);
+    std::optional<Event> dequeue(); // Blocks until work arrives or shutdown begins.
+    void shutdown();
 
-    size_t size();
+    size_t size() const;
 
 private:
-    std::queue<Event> queue;   // Own Events by value
+    std::queue<Event> queue;
     size_t capacity;
     std::atomic<size_t> current_size{0};
 

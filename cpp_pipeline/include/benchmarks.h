@@ -1,11 +1,12 @@
 #pragma once
-#include <string>
-#include <ostream>
 #include <filesystem>
+#include <ostream>
+#include <sstream>
+#include <string>
 
 class Benchmarks {
 public:
-    // Ensure the ./cpp_pipeline/benchmarks folder exists
+    // Ensure the local benchmarks folder exists for run output files.
     static void ensureFolder();
 
     // Generate a unique timestamped filename

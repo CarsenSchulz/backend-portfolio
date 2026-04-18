@@ -1,7 +1,6 @@
-#include "ingestion.h"
+#include "Ingestion.h"
 #include <cmath>
 #include <utility>
-#include <iostream>
 
 Ingestion::Ingestion(EventQueue& q)
     : queue(q) {}

@@ -90,6 +90,23 @@ This document tracks key problems encountered during development, the investigat
 - Benchmarking & reporting architecture  
 - Generator/ingestion thread separation  
 - Ring buffer or lock-free queue experiments  
+- AI-assisted cleanup and review workflow  
 
 ---
+
+## AI-assisted cleanup and review workflow
+
+**What I did:**  
+- Used Codex for a cleanup pass near the end of the project.  
+- Mainly used it for readability, repo cleanup, and checking for small inconsistencies.  
+- Reviewed the diffs before keeping anything.  
+
+**Where it helped:**  
+- Helped fix the build/output path mismatch so the repo layout matched the README.  
+- Helped clean up naming, comments, and small things that were making the code harder to explain.  
+- Good for catching low-risk cleanup items faster than doing a full manual pass.  
+
+**Takeaway:**  
+- Codex was useful for cleanup and review speed, but I still had to check the changes and make sure they matched what I wanted.  
+- It saved time on polish, but I still need to be able to explain every change myself.  
 

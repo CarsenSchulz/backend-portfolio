@@ -31,6 +31,6 @@ void EventQueue::shutdown() {
     cv.notify_all();
 }
 
-size_t EventQueue::size() {
+size_t EventQueue::size() const {
     return current_size.load();
 }

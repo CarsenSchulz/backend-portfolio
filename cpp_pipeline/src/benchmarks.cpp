@@ -1,13 +1,18 @@
-#include "benchmarks.h"
-#include <fstream>
 #include <chrono>
 #include <ctime>
-#include <sstream>
-#include <iostream>
+#include <fstream>
 #include <iomanip>
+#include <iostream>
+#include <sstream>
+
+#include "Benchmarks.h"
+
+namespace {
+const std::filesystem::path kBenchmarkDirectory{"benchmarks"};
+}
 
 void Benchmarks::ensureFolder() {
-    std::filesystem::create_directories("./cpp_pipeline/benchmarks");
+    std::filesystem::create_directories(kBenchmarkDirectory);
 }
 
 std::string Benchmarks::makeTimestampedFilename() {
@@ -16,7 +21,7 @@ std::string Benchmarks::makeTimestampedFilename() {
     std::tm local_tm = *std::localtime(&t);
 
     std::ostringstream filename;
-    filename << "./cpp_pipeline/benchmarks/run_"
+    filename << (kBenchmarkDirectory / "run_").string()
              << (local_tm.tm_year + 1900)  // year
              << std::setw(2) << std::setfill('0') << (local_tm.tm_mon + 1)  // month 1-12
              << std::setw(2) << std::setfill('0') << local_tm.tm_mday        // day

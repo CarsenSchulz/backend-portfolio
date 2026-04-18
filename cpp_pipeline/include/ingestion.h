@@ -1,7 +1,8 @@
 #pragma once
 #include "EventQueue.h"
-#include <cstdint>
 #include <array>
+#include <cstdint>
+#include <ostream>
 
 constexpr int NUM_INSTRUMENTS = 100; // total instruments in synthetic load
 constexpr int ID_MAX = NUM_INSTRUMENTS; // maximum valid instrument ID
@@ -19,8 +20,8 @@ class Ingestion {
     bool validateTimestamp(int64_t instrument_id, int64_t timestamp) const; // Checks if timestamp is valid
 
 public:
-    explicit Ingestion(EventQueue& q); // Constructor
-    
-    bool ingest(int64_t instrument_id, double price, int64_t timestamp); // Returns true if event was successfully ingested, false if queue full
-    void report(std::ostream& os) const;           // Print metrics
+    explicit Ingestion(EventQueue& q);
+
+    bool ingest(int64_t instrument_id, double price, int64_t timestamp); // Returns false on validation failure or a full queue.
+    void report(std::ostream& os) const;
 };
